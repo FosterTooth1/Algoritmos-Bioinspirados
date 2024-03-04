@@ -1,46 +1,80 @@
+%%Flores Lara Alberto 5BV1
+%Tarea 1
+
 clc
-% Parámetros de entrada 
-%Inicializar variables
-Np=5; %Número de población
-Nvar=2; %Número de variables
-li=[-2 -2]; %limite izquierdo de x=-2 & y=-2
-ls=[2 2]; %limite izquierdo de x=2 & y=2
-Pr=2; %Cantidad de decimales
 
-%Paso 1. Calcular el número de bits para representar los valores de -2 a 2
-%con presición 2
-for i=1:Nvar 
-    Nbits(i)=fix(log2(ls(i)-li(i))*10^Pr+0.9); 
+%%Establecemos nuestra poblacion y cantidad de variables con las que vamos a trabajar
+Num_pob = input('\nIngrese el numero de individuos dentro de la población: ');
+Num_var = input('\nIngrese la cantidad de variables que tiene cada individuo: ');
+
+%%Establecemos los limites inferiores y superiores de las variables en un
+%%ciclo for y los guardamos en un arreglo
+
+Limite_Inferior = zeros(1, Num_var);
+for i = 1:Num_var
+    valor = input(['Ingrese el limite inferior de la variable ', num2str(i), ': ']);
+    Limite_Inferior(i) = valor;
 end
 
-%Paso 2. Generar la población
-Poblacion = randi([0 1],[Np sum(Nbits)]); %Esta línea genera una matriz de números
-%aleatorios entre 0 y 1 con diensiones Np por la suma de los elementos en
-%Nbits
 
-%Paso 3. Decodificar los individuos para evaluar en FO
-
-%aleloX = Poblacion(:,1:Nbits(1)); %substraemos los codigos que pertenecen al alelo x
-%aleloY = Poblacion(:,Nbits(1)+1:end);%substraemos los codigos de pertenecen al alelo y
-
-%Sacar la parte entera de X & Y
-Xentero = round(bi2de(Poblacion(:,1:Nbits(1))));
-Yentero = round(bi2de(Poblacion(:,Nbits(1)+1:end)));
-%disp(Xentero);
-%disp(Yentero);
-
-%Aplicamos la segunda formula
-for i=1:Np
-
-    Xreal(i) = li(1) + ((Xentero(i) *  (ls(1) - li(1)))/(2^Nbits(1)-1));
-    Yreal(i) = li(2) + ((Yentero(i) *  (ls(2) - li(2)))/(2^Nbits(2)-1));
+Limite_Superior = zeros(1, Num_var);
+for i = 1:Num_var
+    % Solicita al usuario que ingrese un valor
+    valor = input(['Ingrese el limite superior de la variable ', num2str(i), ': ']);
+    Limite_Superior(i) = valor;
 end
 
-disp(Xreal);
-disp(Yreal);
 
-%Evaluamos en la FO f(x,y) = (1-x)^2 + (100 - y)^2
+%Precicion del algoritmo
+Precision=input('Ingrese el numero de precision del algoritmo: ');
 
-fXY = (1-Xreal).^2 + (100-Yreal).^2 ;
+%Calculamos la cantidad de bits para cada variable 
+for i=1:Num_var 
+    Num_bits(i)=fix(log2(Limite_Superior(i)-Limite_Inferior(i)) * (10 ^ Precision) + 0.9); 
+end
 
-disp(fXY);
+%Generamos la población en una matriz m*n donde m es la poblacion y n son
+%la suma de los bits de todas las variables
+Poblacion = randi([0 1],[Num_pob sum(Num_bits)]); 
+
+% Convertir la población binaria a población real
+Poblacion_real = zeros(Num_pob, Num_var);
+
+%Iteramos dentro de cada variable en todo individuo
+for i = 1:Num_pob
+    bit_inicio = 1;
+    for j = 1:Num_var
+        %Buscamos el rango de los bits a los que pertenece cada variable 
+        bit_final = bit_inicio + Num_bits(j) - 1;
+        binario = Poblacion(i, bit_inicio:bit_final);
+        %Lo convertimos de binario a decimal
+        %disp('Binario')
+        %disp(binario)
+        valor_binario = binario_a_decimal(binario);
+        %disp('Decimal')
+        %disp(valor_binario)
+        %Hacemos la conversion a reales
+        Poblacion_real(i, j) = Limite_Inferior(j) + ((valor_binario * (Limite_Superior(j) - Limite_Inferior(j) )) / ((2 ^ Num_bits(j))-1));
+        %disp("Valor real")
+        %disp(Poblacion_real(i,j))
+        bit_inicio = bit_final + 1;
+    end
+end
+
+% Evaluación de la población en la función objetivo
+for i = 1:Num_pob
+    funcion_eva(i) = (1-Poblacion_real(i,1))^2 + (100-Poblacion_real(i,2))^2;
+end
+
+disp(funcion_eva)
+
+
+function decimal = binario_a_decimal(binario)
+    % Inicializa el valor decimal
+    decimal = 0;
+    % Itera sobre cada dígito binario en la cadena
+    for i = 1:length(binario)
+        % Suma el valor del dígito binario (0 o 1) multiplicado por su posición en la cadena
+        decimal = decimal + binario(i)*2^(length(binario)-i);
+    end
+end
