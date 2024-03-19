@@ -28,6 +28,9 @@ end
 %Precicion del algoritmo
 Precision=input('Ingrese el numero de precision del algoritmo: ');
 
+%Probabilidad de cruza
+Pc=input('Ingrese la probabilidad de cruza del algoritmo: ');
+
 %Calculamos la cantidad de bits para cada variable 
 for i=1:Num_var 
     Num_bits(i)=fix(log2((Limite_Superior(i)-Limite_Inferior(i)) * 10 ^ Precision) + 0.9); 
@@ -94,6 +97,42 @@ for i = 1:Num_pob
     disp(['Esta es la codificacion en bits del Padre ', num2str(i), ':']);
     disp(Padres(i,:));
 end
+
+%Cruzamiento
+Hijos=zeros(Num_pob, sum(Num_bits));
+for i =1:2:Num_pob-1
+    disp(['Padres :', num2str(i), num2str(i+1)]);
+    Num_random= rand;
+    
+    if rand <= Pc
+        puntos=randperm(sum(Num_bits)-1, 2);
+        puntos=sort(puntos);
+        disp('Los puntos de corte son:')
+        disp(puntos);
+        hijo_1= [Padres(i,1:puntos(1)), Padres(i+1,puntos(1)+1:puntos(2)), Padres(i,puntos(2)+1:end)];
+        hijo_2= [Padres(i+1,1:puntos(1)), Padres(i,puntos(1)+1:puntos(2)), Padres(i+1,puntos(2)+1:end)];
+    else
+        disp('Los dos hijos son los padres');
+        hijo_1 = Padres(i,:);
+        hijo_2 = Padres(i+1,:);
+    end
+    Hijos(i,:) = hijo_1;
+    Hijos(i+1,:) = hijo_2;
+
+end
+
+if mod(Num_pob, 2) ~= 0
+    Hijos(Num_pob,:)=Padres(Num_pob,:);
+end
+
+disp(Hijos)
+
+disp('Estos son los Hijos:')
+for i = 1:Num_pob
+    disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
+    disp(Hijos(i,:));
+end
+
 
 function decimal = binario_a_decimal(binario)
     % Inicializa el valor decimal
