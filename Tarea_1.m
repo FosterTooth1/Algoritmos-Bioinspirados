@@ -31,6 +31,9 @@ Precision=input('Ingrese el numero de precision del algoritmo: ');
 %Probabilidad de cruza
 Pc=input('Ingrese la probabilidad de cruza del algoritmo: ');
 
+%Probabilidad de mutación
+Pm=input('Ingrese la probabilidad de mutacion del algoritmo: ');
+
 %Calculamos la cantidad de bits para cada variable 
 for i=1:Num_var 
     Num_bits(i)=fix(log2((Limite_Superior(i)-Limite_Inferior(i)) * 10 ^ Precision) + 0.9); 
@@ -76,6 +79,10 @@ for i = 1:Num_pob
     disp(aptitud(i));
 end
 
+%Obtener la posicion del padre con mejor aptitud (minimzacion)
+posiciones_menor = find(aptitud == min(aptitud));
+Pos_Mejor = posiciones_menor(1);
+disp(Pos_Mejor)
 
 %Codigo del Torneo
 Padres = zeros(Num_pob,sum(Num_bits));
@@ -104,7 +111,7 @@ for i =1:2:Num_pob-1
     disp(['Padres :', num2str(i), num2str(i+1)]);
     Num_random= rand;
     
-    if rand <= Pc
+    if Num_random <= Pc
         puntos=randperm(sum(Num_bits)-1, 2);
         puntos=sort(puntos);
         disp('Los puntos de corte son:')
@@ -125,9 +132,23 @@ if mod(Num_pob, 2) ~= 0
     Hijos(Num_pob,:)=Padres(Num_pob,:);
 end
 
-disp(Hijos)
-
 disp('Estos son los Hijos:')
+for i = 1:Num_pob
+    disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
+    disp(Hijos(i,:));
+end
+
+%Mutacion
+for i=1:Num_pob
+    Num_random= rand;
+    if Num_random <= Pm
+          x = randi([1, sum(Num_bits)]);
+          Hijos(i, x) = ~Hijos(i, x);
+    end
+
+end
+
+disp('Estos son los Hijos tras la mutacion:')
 for i = 1:Num_pob
     disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
     disp(Hijos(i,:));
