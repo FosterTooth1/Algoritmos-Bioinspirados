@@ -3,6 +3,9 @@
 
 clc
 
+% Solicitar al usuario el número de veces que se debe repetir el algoritmo
+Num_iteraciones = input('\nIngrese el número de veces que se repetirá el algoritmo: ');
+
 %%Establecemos nuestra poblacion y cantidad de variables con las que vamos a trabajar
 Num_pob = input('\nIngrese el numero de individuos dentro de la población: ');
 Num_var = input('\nIngrese la cantidad de variables que tiene cada individuo: ');
@@ -43,115 +46,129 @@ end
 %la suma de los bits de todas las variables
 Poblacion = randi([0 1],[Num_pob sum(Num_bits)]); 
 
-disp(Poblacion)
+%Aqui se regulan la cantidad de veces que se repite el algoritmo
+for iteracion = 1:Num_iteraciones
+    disp(['Iteración número: ', num2str(iteracion)]);
 
-% Convertir la población binaria a población real
-Poblacion_real = zeros(Num_pob, Num_var);
+    disp(Poblacion)
 
-%Iteramos dentro de cada variable en todo individuo
-for i = 1:Num_pob
-    bit_inicio = 1;
-    for j = 1:Num_var
-        %Buscamos el rango de los bits a los que pertenece cada variable 
-        bit_final = bit_inicio + Num_bits(j) - 1;
-        binario = Poblacion(i, bit_inicio:bit_final);
-        %Lo convertimos de binario a decimal
-        disp('Binario')
-        disp(binario)
-        valor_binario = binario_a_decimal(binario);
-        disp('Decimal')
-        disp(valor_binario)
-        %Hacemos la conversion a reales
-        Poblacion_real(i, j) = Limite_Inferior(j) + ((valor_binario * (Limite_Superior(j) - Limite_Inferior(j) )) / ((2 ^ Num_bits(j))-1));
-        disp("Valor real")
-        disp(Poblacion_real(i,j))
-        bit_inicio = bit_final + 1;
+    % Convertir la población binaria a población real
+    Poblacion_real = zeros(Num_pob, Num_var);
+
+    %Iteramos dentro de cada variable en todo individuo
+    for i = 1:Num_pob
+        bit_inicio = 1;
+        for j = 1:Num_var
+            %Buscamos el rango de los bits a los que pertenece cada variable
+            bit_final = bit_inicio + Num_bits(j) - 1;
+            binario = Poblacion(i, bit_inicio:bit_final);
+            %Lo convertimos de binario a decimal
+            disp('Binario')
+            disp(binario)
+            valor_binario = binario_a_decimal(binario);
+            disp('Decimal')
+            disp(valor_binario)
+            %Hacemos la conversion a reales
+            Poblacion_real(i, j) = Limite_Inferior(j) + ((valor_binario * (Limite_Superior(j) - Limite_Inferior(j) )) / ((2 ^ Num_bits(j))-1));
+            disp("Valor real")
+            disp(Poblacion_real(i,j))
+            bit_inicio = bit_final + 1;
+        end
     end
-end
 
-% Evaluación de la población en la función objetivo
-for i = 1:Num_pob
-    aptitud(i) = (1-Poblacion_real(i,1))^2 + (100-Poblacion_real(i,2))^2;
-end
+    % Evaluación de la población en la función objetivo
+    for i = 1:Num_pob
+        aptitud(i) = (1-Poblacion_real(i,1))^2 + (100-Poblacion_real(i,2))^2;
+    end
 
-for i = 1:Num_pob
-    disp(['Esta es la aptitud del individuo ', num2str(i), ': ']);
-    disp(aptitud(i));
-end
+    for i = 1:Num_pob
+        disp(['Esta es la aptitud del individuo ', num2str(i), ': ']);
+        disp(aptitud(i));
+    end
 
-%Obtener la posicion del padre con mejor aptitud (minimzacion)
-posiciones_menor = find(aptitud == min(aptitud));
-Pos_Mejor = posiciones_menor(1);
-disp(Pos_Mejor)
+    %Obtener la posicion del padre con mejor aptitud (minimzacion)
+    posiciones_menor = find(aptitud == min(aptitud));
+    Pos_Mejor = posiciones_menor(1);
+    disp(Pos_Mejor)
 
-%Codigo del Torneo
-Padres = zeros(Num_pob,sum(Num_bits));
-Torneo = [randperm(Num_pob); randperm(Num_pob)]';
+    %Codigo del Torneo
+    Padres = zeros(Num_pob,sum(Num_bits));
+    Torneo = [randperm(Num_pob); randperm(Num_pob)]';
 
-for i = 1:Num_pob
+    for i = 1:Num_pob
+
+        if aptitud(Torneo(i,1))<aptitud(Torneo(i,2))
+            Padres(i,:) = Poblacion(Torneo(i,1),:);
+
+        else
+            Padres(i,:) = Poblacion(Torneo(i,2),:);
+
+        end
+    end
+
+
+    for i = 1:Num_pob
+        disp(['Esta es la codificacion en bits del Padre ', num2str(i), ':']);
+        disp(Padres(i,:));
+    end
+
+    %Cruzamiento
+    Hijos=zeros(Num_pob, sum(Num_bits));
+    for i =1:2:Num_pob-1
+        disp(['Padres :', num2str(i), num2str(i+1)]);
+        Num_random= rand;
+
+        if Num_random <= Pc
+            puntos=randperm(sum(Num_bits)-1, 2);
+            puntos=sort(puntos);
+            disp('Los puntos de corte son:')
+            disp(puntos);
+            hijo_1= [Padres(i,1:puntos(1)), Padres(i+1,puntos(1)+1:puntos(2)), Padres(i,puntos(2)+1:end)];
+            hijo_2= [Padres(i+1,1:puntos(1)), Padres(i,puntos(1)+1:puntos(2)), Padres(i+1,puntos(2)+1:end)];
+        else
+            disp('Los dos hijos son los padres');
+            hijo_1 = Padres(i,:);
+            hijo_2 = Padres(i+1,:);
+        end
+        Hijos(i,:) = hijo_1;
+        Hijos(i+1,:) = hijo_2;
+
+    end
+
+    if mod(Num_pob, 2) ~= 0
+        Hijos(Num_pob,:)=Padres(Num_pob,:);
+    end
+
+    disp('Estos son los Hijos:')
+    for i = 1:Num_pob
+        disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
+        disp(Hijos(i,:));
+    end
+
+    %Mutacion
+    for i=1:Num_pob
+        Num_random= rand;
+        if Num_random <= Pm
+            x = randi([1, sum(Num_bits)]);
+            Hijos(i, x) = ~Hijos(i, x);
+        end
+
+    end
+
+    disp('Estos son los Hijos tras la mutacion:')
+    for i = 1:Num_pob
+        disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
+        disp(Hijos(i,:));
+    end
+
+    %Sustitucion
+    Pos_aleatoria = randi([1, Num_pob]);
+    Hijos(Pos_aleatoria,:) = Poblacion(Pos_Mejor,:);
     
-    if aptitud(Torneo(i,1))<aptitud(Torneo(i,2))
-        Padres(i,:) = Poblacion(Torneo(i,1),:);
-    
-    else
-        Padres(i,:) = Poblacion(Torneo(i,2),:);
-      
+    %Convertimos a los hijos en la poblacion de la siguiente iteracion
+    if iteracion < Num_iteraciones
+        Poblacion = Hijos;
     end
-end
-
-
-for i = 1:Num_pob
-    disp(['Esta es la codificacion en bits del Padre ', num2str(i), ':']);
-    disp(Padres(i,:));
-end
-
-%Cruzamiento
-Hijos=zeros(Num_pob, sum(Num_bits));
-for i =1:2:Num_pob-1
-    disp(['Padres :', num2str(i), num2str(i+1)]);
-    Num_random= rand;
-    
-    if Num_random <= Pc
-        puntos=randperm(sum(Num_bits)-1, 2);
-        puntos=sort(puntos);
-        disp('Los puntos de corte son:')
-        disp(puntos);
-        hijo_1= [Padres(i,1:puntos(1)), Padres(i+1,puntos(1)+1:puntos(2)), Padres(i,puntos(2)+1:end)];
-        hijo_2= [Padres(i+1,1:puntos(1)), Padres(i,puntos(1)+1:puntos(2)), Padres(i+1,puntos(2)+1:end)];
-    else
-        disp('Los dos hijos son los padres');
-        hijo_1 = Padres(i,:);
-        hijo_2 = Padres(i+1,:);
-    end
-    Hijos(i,:) = hijo_1;
-    Hijos(i+1,:) = hijo_2;
-
-end
-
-if mod(Num_pob, 2) ~= 0
-    Hijos(Num_pob,:)=Padres(Num_pob,:);
-end
-
-disp('Estos son los Hijos:')
-for i = 1:Num_pob
-    disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
-    disp(Hijos(i,:));
-end
-
-%Mutacion
-for i=1:Num_pob
-    Num_random= rand;
-    if Num_random <= Pm
-          x = randi([1, sum(Num_bits)]);
-          Hijos(i, x) = ~Hijos(i, x);
-    end
-
-end
-
-disp('Estos son los Hijos tras la mutacion:')
-for i = 1:Num_pob
-    disp(['Esta es la codificacion en bits del Hijo ', num2str(i), ':']);
-    disp(Hijos(i,:));
 end
 
 
