@@ -1,13 +1,12 @@
 function []= AGHibrido()
 clear, clc, close all;
 
-Np=50;
-Ng=200;
-Pm=0.2;
-Nvar=11;
-m=3;
+Num_pob=100;
+Num_Gen=500;
+Pm=0.15;
+Num_var=11;
 
-d = [
+Distancias = [
     0 3091 927 1876 2704 94 2999 1641 3471 1838 3013;
     3091 0 2542 1681 375 2994 138 1442 389 1407 290;
     927 2542 0 1337 2169 930 2464 1100 2935 1168 2465;
@@ -21,80 +20,82 @@ d = [
     3013 290 2465 1604 296 2915 338 1365 607 1330 0
 ];
 
-runs=1;
 Soluciones=[];
 
 %Poblacion inicial
-p=zeros(Np, Nvar);
-for i=1:Np
-    p(i,:)= randperm(Nvar);
+Pob=zeros(Num_pob, Num_var);
+for i=1:Num_pob
+    Pob(i,:)= randperm(Num_var);
 end
 
 %Evaluación
-VFO_p=zeros(Np, 1);
-for i=1:Np
-    VFO_p(i)= FO_TSP(p(i,:), d, Nvar);
+Aptitud_Pob=zeros(Num_pob, 1);
+for i=1:Num_pob
+    Aptitud_Pob(i)= Costo(Pob(i,:), Distancias, Num_var);
 end
 
 iter= 1;
-while iter<= Ng
+while iter <= Num_Gen
     %Seleccion
-    idx=randi(Np, [1 Np])';
-    Padres=p(idx, :);
-    VFO_padres=VFO_p(idx);
-    
+    idx = randi(Num_pob, [1 Num_pob])';
+    Padres = Pob(idx, :);
+    Aptitud_Padres = Aptitud_Pob(idx);
+
     %Cruzamiento
-    Hijos=[];
-    for i=1:2:Np
-        Hijo = EdgeRecombination(Padres(i,:), Padres(i+1,:), Nvar);
-        Hijos=[Hijos; Hijo];
+    Hijos = [];
+    for i = 1:2:Num_pob
+        Hijo = EdgeRecombination(Padres(i,:), Padres(i+1,:), Num_var);
+        Hijos = [Hijos; Hijo];
     end
 
     %Evaluacion
-    VFO_h=zeros(Np,1);
-    for i=1:Np/2
-        VFO_h(i)=FO_TSP(Hijos(i,:),d,Nvar);
+    Aptitud_Hijos = zeros(Num_pob,1);
+    for i = 1:Num_pob/2
+        Aptitud_Hijos(i) = Costo(Hijos(i,:), Distancias, Num_var);
     end
-    
+
     %Sustitucion
-    p=[];
-    VFO_p=[];
+    Pob = [];
+    Aptitud_Pob = [];
     j = 1;
-    for i=1:2:Np
-            %Familia
-            Familia=[Padres(i:i+1, :); Hijos(j,:)];
-            %Ordenamiemto de la familia de mejor a peor
-            [v,idx]=sort([VFO_padres(i:i+1); VFO_h(j)]);
-            %Ganadores de la familia
-            p(i:i+1,:)=Familia(idx(1:2),:);
-            %Aptitudes
-            VFO_p(i:i+1,1)=v(1:2);
-            j=j+1;
-    end
+    for i = 1:2:Num_pob
+        %Familia
+        Familia = [Padres(i:i+1, :); Hijos(j,:)];
+        %Ordenamiento de la familia de mejor a peor
+        [v, idx] = sort([Aptitud_Padres(i:i+1); Aptitud_Hijos(j)]);
+        %Ganadores de la familia
+        Pob(i:i+1,:) = Familia(idx(1:2),:);
+        %Aptitudes
+        Aptitud_Pob(i:i+1,1) = v(1:2);
+        j = j + 1;
+    end  
+
     %Mutacion
-    for i=1:Np
-        if rand<=Pm
-            ind=randi(Np);
-            p(ind,:)=randperm(Nvar);
-            VFO_p(ind)=FO_TSP(p(ind,:), d,Nvar);
+    for i = 1:Num_pob
+        if rand <= Pm
+            ind = randi(Num_pob);
+            Pob(ind,:) = randperm(Num_var);
+            Aptitud_Pob(ind) = Costo(Pob(ind,:), Distancias, Num_var);
         end
     end
+
     %Elite
-    [~,ind]= sort(VFO_p);
-    p_Elite=p(ind(1),:);
-    VFO_Elite=VFO_p(ind(1));
-    %Salida
-    iter=iter+1;
-
+    [~, ind] = sort(Aptitud_Pob);
+    p_Elite(iter,:) = Pob(ind(1),:);
+    Aptitud_Elite(iter) = Aptitud_Pob(ind(1));
+    
+    % Salida
+    fprintf('Iteración: %d, p_Elite: %s, Aptitud_Elite: %f\n', iter, mat2str(p_Elite(iter,:)), Aptitud_Elite(iter));
+    iter = iter + 1;
 end
 
-Soluciones = [Soluciones; p_Elite, VFO_Elite];  % Añadir permutación y costo
+Mejor_Historico = find(Aptitud_Elite == min(Aptitud_Elite));
+Pos_Mejor = Mejor_Historico(1);
 
-% Antes de mostrar la salida
-disp('Permutaciones y sus costos:');
-for i = 1:size(Soluciones, 1)
-    fprintf('Permutación: %s, Costo: %d\n', mat2str(Soluciones(i, 1:end-1)), Soluciones(i, end));
-end
+Solucion = [p_Elite(Num_Gen,:), Aptitud_Elite(Num_Gen)];
+
+fprintf('Mejor ultima generacion de recorrido: %s, Costo: %d\n', mat2str(Solucion(1:end-1)), Solucion(end));
+fprintf('Mejor recorrido Historico: %s, Costo: %d\n', mat2str(p_Elite(Pos_Mejor,:)), Aptitud_Elite(Pos_Mejor));
 
 end
 
@@ -149,12 +150,12 @@ for i = 2:noCiudades
 end
 end
 
-function costo = FO_TSP(recorrido, d, noCiudades)
+function costo = Costo(recorrido, Distancias, noCiudades)
     costo = 0;
-    for k = 1:noCiudades-1
-        costo = costo + d(recorrido(k), recorrido(k+1));
+    for i = 1:noCiudades-1
+        costo = costo + Distancias(recorrido(i), recorrido(i+1));
     end
-    costo = costo + d(recorrido(noCiudades), recorrido(1)); % Retorno a la ciudad inicial
+    costo = costo + Distancias(recorrido(noCiudades), recorrido(1)); % Retorno a la ciudad inicial
 end
 
 
