@@ -193,9 +193,11 @@ for iteracion = 1:Num_iteraciones
         end
     end
 
+    
     %Se obtienen las estadisticas de los resultados obtenidos en cada generacion
     %disp(Mejor_Aptitud);
     mejor = min(Mejor_Aptitud);
+    %{
     media = mean(Mejor_Aptitud);
     peor = max(Mejor_Aptitud);
     desviacion_estandar = std(Mejor_Aptitud);
@@ -206,7 +208,7 @@ for iteracion = 1:Num_iteraciones
     disp(['Peor: ', num2str(peor)]);
     disp(['Desviacion estandar: ', num2str(desviacion_estandar)]);
     disp('');
-
+    %}
     Resultados_Generales(iteracion) = mejor;
 end
 
