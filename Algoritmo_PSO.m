@@ -10,9 +10,9 @@ Num_Generaciones = input('Ingrese el número de generaciones en el algoritmo: ')
 Num_pob = input('Ingrese el numero de individuos dentro de la población: ');
 Num_var = input('Ingrese la cantidad de variables que tiene cada individuo: ');
 
-c1 = 2;
-c2 = 2;
-w = 0.5;
+c1 = 3;
+c2 = 3;
+w = 0.6;
 
 % Establecemos los limites inferiores y superiores de las variables en un ciclo for y los guardamos en un arreglo
 Limite_Inferior = zeros(1, Num_var);
@@ -46,7 +46,7 @@ for iteracion = 1:Num_iteraciones
         aptitud = zeros(1, Num_pob);
         % Evaluación de la población en la función objetivo
         for i = 1:Num_pob
-            aptitud(i) = sum(x(i, :).^2);
+            aptitud(i) = - (x(i, 2) + 47) * sin(sqrt(abs(x(i, 2) + x(i, 1)/2 + 47))) - x(i, 1) * sin(sqrt(abs(x(i, 1) - (x(i, 2) + 47))));
         end
 
         [Mejor_Aptitud_Generacion, idx] = min(aptitud);

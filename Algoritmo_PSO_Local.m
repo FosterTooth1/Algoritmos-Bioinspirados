@@ -10,9 +10,9 @@ Num_Generaciones = input('Ingrese el número de generaciones en el algoritmo: ')
 Num_pob = input('Ingrese el numero de individuos dentro de la población: ');
 Num_var = input('Ingrese la cantidad de variables que tiene cada individuo: ');
 
-c1 = 2;
-c2 = 2;
-w = 0.5;
+c1 = 3;
+c2 = 3;
+w = 0.6;
 
 % Establecemos los limites inferiores y superiores de las variables en un ciclo for y los guardamos en un arreglo
 Limite_Inferior = zeros(1, Num_var);
@@ -52,17 +52,22 @@ for iteracion = 1:Num_iteraciones
         aptitud = zeros(1, Num_pob);
         % Evaluación de la población en la función objetivo
         for i = 1:Num_pob
-            aptitud(i) = sum(x(i, :).^2);
+            aptitud(i) = - (x(i, 2) + 47) * sin(sqrt(abs(x(i, 2) + x(i, 1)/2 + 47))) - x(i, 1) * sin(sqrt(abs(x(i, 1) - (x(i, 2) + 47))));
         end
 
         for i = 1:Num_pob
+            if aptitud(i) < best_aptitud(i)
+                x_p_best(i, :) = x(i, :);
+                best_aptitud(i) = aptitud(i);
+            end
+
             P1 = x(nbh(i,1),:);
             aptitudP1 = aptitud(nbh(i,1));
             P2 = x(nbh(i,2),:);
             aptitudP2 = aptitud(nbh(i,2));
             P3 = x(nbh(i,3),:);
             aptitudP3 = aptitud(nbh(i,3));
-            
+
             [min_aptitud, idx_min] = min([aptitudP1, aptitudP2, aptitudP3]);
             if idx_min == 1
                 x_g_best = P1;
@@ -72,8 +77,6 @@ for iteracion = 1:Num_iteraciones
                 x_g_best = P3;
             end
 
-            
-            
             % Actualizar la velocidad y posición de partículas
             for j = 1:Num_var
                 r1 = rand;
@@ -108,5 +111,6 @@ disp(['Mejor: ', num2str(mejor)]);
 disp(['Media: ', num2str(media)]);
 disp(['Peor: ', num2str(peor)]);
 disp(['Desviación estándar: ', num2str(desviacion_estandar)]);
+
 
 
