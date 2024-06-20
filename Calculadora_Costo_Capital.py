@@ -2,10 +2,10 @@ import numpy as np
 import csv
 
 # Permutación de los índices de los puntos
-permutation = [7, 13, 24, 20, 2, 3, 25, 16, 19, 12, 10, 31, 17, 15, 21, 1, 32, 28, 30, 22, 4, 11, 8, 9, 14, 27, 6, 23, 26, 5, 29, 18]
+permutation = [31, 13, 8, 17, 9, 24, 3, 2, 25, 6, 7, 18, 27, 30, 22, 4, 26, 5, 19, 29, 28, 20, 12, 32, 16, 11, 14, 15, 21, 10, 23, 1]
 
 # Nombre del archivo CSV
-archivo_csv = 'distancias.csv'
+archivo_csv = 'Algoritmos-Bioinspirados\distancias.csv'
 
 # Inicializar el costo total
 total_cost = 0.0
