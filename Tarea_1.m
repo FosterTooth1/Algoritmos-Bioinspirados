@@ -95,6 +95,17 @@ for iteracion = 1:Num_iteraciones
             aptitud(i) = 20 + (Poblacion_real(i,1)^2 - 10 * cos(2 * pi * Poblacion_real(i,1))) + (Poblacion_real(i,2)^2 - 10 * cos(2 * pi * Poblacion_real(i,2)));
         end
         
+        % Gráfica de la población en el espacio 2D para la generación actual
+        figure(iteracion); % Crear una nueva figura para cada iteración
+        scatter(Poblacion(:, 1), Poblacion(:, 2), 50, 'filled'); % Graficar la población actual
+        title(['Iteración ', num2str(iteracion), ' - Generación ', num2str(generacion)]);
+        xlabel('Variable X');
+        ylabel('Variable Y');
+        xlim([Limite_Inferior(1), Limite_Superior(1)]);
+        ylim([Limite_Inferior(2), Limite_Superior(2)]);
+        grid on;
+        drawnow; % Actualizar la gráfica en cada generación
+
         %{
         disp(['Esta es la generacion numero: ', num2str(generacion)]);
         for i = 1:Num_pob
