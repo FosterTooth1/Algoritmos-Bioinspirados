@@ -134,6 +134,7 @@ function Ciudades_Vecinas = CrearLista(padre1, padre2, noCiudades)
         ciudad = padre1(i);
         indx1 = [i-1, i+1];
         indx2 = find(padre2 == ciudad);
+        indx2 = [indx2-1, indx2+1];
 
         indx1(indx1 == 0) = noCiudades;
         indx1(indx1 > noCiudades) = 1;
@@ -154,8 +155,10 @@ function hijo = EdgeRecombination(padre1, padre2, noCiudades)
 
     for i = 2:noCiudades
         for j = 1:length(Ciudades_Vecinas)
-            indx = Ciudades_Vecinas{j} == city_actual;
-            Ciudades_Vecinas{j}(indx) = [];
+            if ~isempty(Ciudades_Vecinas{j})
+                indx = Ciudades_Vecinas{j} == city_actual;
+                Ciudades_Vecinas{j}(indx) = [];
+            end
         end
 
         vecinos_actuales = Ciudades_Vecinas{city_actual};
